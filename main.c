@@ -154,6 +154,10 @@ static void ping_loop(Host *h) {
     }
 
     fprintf(stdout, "--- %s ping statistics ---\n", h->hostname);
+
+    double loss = (double)(h->packet_sent - h->packet_received) / (double)h->packet_sent;
+    fprintf(stdout, "%ld packets transmitted, %ld packets received, %.1f%% packet loss\n",
+        h->packet_sent, h->packet_received, 100.0 * loss);
 }
 
 static void init_socket(Host *h) {
@@ -176,7 +180,7 @@ int main(int argc, char *argv[]) {
     Host h = {0};
 
     if (argc == 2) {
-    memcpy(h.hostname, argv[1], strlen(argv[1]));
+        memcpy(h.hostname, argv[1], strlen(argv[1]));
     } else if (argc > 2) {
         if (strcmp(argv[1], "-c") == 0) {
             g_count = atoi(argv[2]);
