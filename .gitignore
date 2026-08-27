@@ -1,5 +1,6 @@
 .vscode
 ping
+ping.dSYM
 *.o
 a.out
 .DS_Store

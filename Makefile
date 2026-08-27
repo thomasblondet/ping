@@ -1,8 +1,20 @@
-ping: main.o
-	clang -std=c17 -Wall -Wextra -Wpedantic -Werror $^ -o $@
+NAME = ping
+CC = clang
 
-main.o: main.c
-	clang -std=c17 -Wall -Wextra -Wpedantic -Werror -c $^
+CFLAGS = -std=c17 \
+         -Wall \
+         -Wextra \
+         -Wpedantic \
+		 -Werror
+
+SAN = -fsanitize=address,undefined \
+	  -fno-sanitize-recover=undefined -g -O1
+
+ping: main.c
+	$(CC) $(CFLAGS) main.c -o $(NAME)
+
+san: main.c
+	$(CC) $(CFLAGS) $(SAN) main.c -o $(NAME)
 
 clean:
-	rm -f *.o ping
+	rm -f $(NAME)
