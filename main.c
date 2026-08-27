@@ -128,14 +128,14 @@ static void get_response(Host *h) {
 
     const Packet *pkt = (Packet *)(buf + ip_len);
 
-    struct timeval *start = (struct timeval *)pkt->payload;
-    struct timeval end;
+    struct timeval start, end;
+    memcpy(&start, pkt->payload, sizeof(struct timeval));
     gettimeofday(&end, NULL);
 
     // this is the response
     if (pkt->type == ICMP_ECHOREPLY && pkt->identifier == htons(getpid() & 0xffff)) {
         fprintf(stdout, "%ld bytes from %s: icmp_seq=%ld ttl=%hu time=%.3f ms\n",
-            n - ip_len, h->ip, h->packet_received, ip->ip_ttl, time_diff(start, &end));
+            n - ip_len, h->ip, h->packet_received, ip->ip_ttl, time_diff(&start, &end));
         h->packet_received++;
     }
 }
@@ -173,7 +173,6 @@ static void init_socket(Host *h) {
 }
 
 int main(int argc, char *argv[]) {
-    (void)argc;
     Host h = {0};
 
     if (argc == 2) {
