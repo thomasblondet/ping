@@ -3,6 +3,7 @@
 #include "ping.h"
 
 static int g_sig;
+static int g_count;
 
 static void signal_handler(const int sig) {
     g_sig = 1;
@@ -147,6 +148,8 @@ static void ping_loop(Host *h) {
     while (!g_sig) {
         send_packet(h);
         get_response(h);
+        if (g_count && h->packet_received == g_count)
+            break;
         sleep(1);
     }
 
@@ -172,7 +175,20 @@ static void init_socket(Host *h) {
 int main(int argc, char *argv[]) {
     (void)argc;
     Host h = {0};
+
+    if (argc == 2) {
     memcpy(h.hostname, argv[1], strlen(argv[1]));
+    } else if (argc > 2) {
+        if (strcmp(argv[1], "-c") == 0) {
+            g_count = atoi(argv[2]);
+        } else {
+            return 1;
+        }
+        memcpy(h.hostname, argv[3], strlen(argv[3]));
+    } else {
+        return 1;
+    }
+
     hostname_resolution(&h);
     init_socket(&h);
     ping_loop(&h);
