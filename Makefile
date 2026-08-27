@@ -5,4 +5,4 @@ main.o: main.c
 	clang -std=c17 -Wall -Wextra -Wpedantic -Werror -c $^
 
 clean:
-	rm -f *.o
+	rm -f *.o ping

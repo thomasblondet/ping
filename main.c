@@ -78,11 +78,19 @@ static Packet build_packet(Host *h) {
         .sequence = htons(h->packet_sent),
     };
 
-    for (size_t i = 0; i < PAYLOAD_SIZE; i++) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    size_t tv_len = sizeof(tv);
+    memcpy(pkt.payload, &tv, tv_len);
+
+    for (size_t i = tv_len; i < PAYLOAD_SIZE; i++) {
         pkt.payload[i] = 42;
     }
 
     pkt.checksum = htons(calculate_checksum((uint8_t *)&pkt, PACKET_SIZE));
+
+    // FOR DEBUG
+    // print_packet((uint16_t *)&pkt, PACKET_SIZE);
 
     return pkt;
 }
@@ -95,6 +103,11 @@ static void send_packet(Host *h) {
     }
     
     h->packet_sent++;
+}
+
+static double time_diff(struct timeval *start, struct timeval *end) {
+    return (((end->tv_sec * 1000.0) + (end->tv_usec / 1000.0))
+        - ((start->tv_sec * 1000.0) + (start->tv_usec / 1000.0)));
 }
 
 static void get_response(Host *h) {
@@ -114,10 +127,14 @@ static void get_response(Host *h) {
 
     const Packet *pkt = (Packet *)(buf + ip_len);
 
+    struct timeval *start = (struct timeval *)pkt->payload;
+    struct timeval end;
+    gettimeofday(&end, NULL);
+
     // this is the response
     if (pkt->type == ICMP_ECHOREPLY && pkt->identifier == htons(getpid() & 0xffff)) {
-        fprintf(stdout, "%ld bytes from %s: icmp_seq=%ld ttl=%hu time=\n",
-            n - ip_len, h->ip, h->packet_received, ip->ip_ttl);
+        fprintf(stdout, "%ld bytes from %s: icmp_seq=%ld ttl=%hu time=%.3f ms\n",
+            n - ip_len, h->ip, h->packet_received, ip->ip_ttl, time_diff(start, &end));
         h->packet_received++;
     }
 }
