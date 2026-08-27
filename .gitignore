@@ -1,0 +1,5 @@
+.vscode
+ping
+*.o
+a.out
+.DS_Store
