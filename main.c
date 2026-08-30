@@ -4,6 +4,7 @@
 
 static int g_sig;
 static int g_count;
+static int g_ttl;
 
 static void signal_handler(const int sig) {
     g_sig = 1;
@@ -186,6 +187,13 @@ static void init_socket(Host *h) {
         close(h->fd);
         fatal("setsockopt");
     }
+
+    if (g_ttl) {
+        if (setsockopt(h->fd, IPPROTO_IP, IP_TTL, &g_ttl, sizeof(g_ttl)) < 0) {
+            close(h->fd);
+            fatal("setsockopt");
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -196,6 +204,8 @@ int main(int argc, char *argv[]) {
     } else if (argc > 2) {
         if (strcmp(argv[1], "-c") == 0) {
             g_count = atoi(argv[2]);
+        } else if (strcmp(argv[1], "-m") == 0) {
+            g_ttl = atoi(argv[2]);
         } else {
             return 1;
         }
