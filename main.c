@@ -133,21 +133,23 @@ static void get_response(Host *h) {
         fatal("recvfrom");
     }
 
-    struct ip *ip = (struct ip *)buf;
-    size_t ip_len = ip->ip_hl * 4;
+    size_t ip_hdr_len = (buf[0] & 0x0F) * 4;
 
-    const Packet *pkt = (Packet *)(buf + ip_len);
+    const uint8_t *icmp = buf + ip_hdr_len;
 
-    struct timeval start, end;
-    memcpy(&start, pkt->payload, sizeof(struct timeval));
-    gettimeofday(&end, NULL);
+    uint8_t type = icmp[0];
+    if (type == ICMP_ECHOREPLY) {
+        int ttl = buf[8];
 
-    // this is the response
-    if (pkt->type == ICMP_ECHOREPLY && pkt->identifier == htons(getpid() & 0xffff)) {
-        fprintf(stdout, "%ld bytes from %s: icmp_seq=%ld ttl=%hu time=%.3f ms\n",
-            n - ip_len, h->ip, h->packet_received, ip->ip_ttl, time_diff(&start, &end));
-        h->packet_received++;
+        struct timeval start, end;
+        memcpy(&start, icmp + ICMP_MINLEN, sizeof(struct timeval));
+        gettimeofday(&end, NULL);
+
+        fprintf(stdout, "%ld bytes from %s: icmp_seq=%ld ttl=%d time=%.3f ms\n",
+            n - ip_hdr_len, h->ip, h->packet_received, ttl, time_diff(&start, &end));
     }
+
+    h->packet_received++;
 }
 
 static void ping_loop(Host *h) {
