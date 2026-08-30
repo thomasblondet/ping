@@ -18,9 +18,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#define PACKET_SIZE 64
-#define ICMP_HEADER_SIZE 8
 #define PAYLOAD_SIZE 56
+#define PACKET_SIZE (ICMP_MINLEN + PAYLOAD_SIZE)
 
 typedef struct {
     int fd;
@@ -30,14 +29,5 @@ typedef struct {
     long packet_sent;
     long packet_received;
 } Host;
-
-typedef struct {
-    uint8_t type;
-    uint8_t code;
-    uint16_t checksum;
-    uint16_t identifier;
-    uint16_t sequence;
-    uint8_t payload[PAYLOAD_SIZE];
-} __attribute__((packed)) Packet;
 
 #endif

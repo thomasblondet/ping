@@ -70,39 +70,49 @@ static uint16_t calculate_checksum(const uint8_t *pkt, const size_t size) {
 //     }
 // }
 
-static Packet build_packet(Host *h) {
-    Packet pkt = {
-        .type = ICMP_ECHO,
-        .code = 0,
-        .checksum = 0,
-        .identifier = htons(getpid() & 0xffff),
-        .sequence = htons(h->packet_sent),
-    };
+static void build_packet(Host *h, uint8_t *buf) {
+    uint8_t temp[PACKET_SIZE];
 
+    temp[0] = ICMP_ECHO;
+    temp[1] = 0;
+
+    uint16_t checksum = 0;
+    memcpy(temp + 2, &checksum, 2);
+
+    uint16_t id = htons(getpid() & 0xffff);
+    memcpy(temp + 4, &id, 2);
+
+    uint16_t sequence = htons(h->packet_sent);
+    memcpy(temp + 6, &sequence, 2);
+
+    uint8_t payload[PAYLOAD_SIZE];
     struct timeval tv;
     gettimeofday(&tv, NULL);
     size_t tv_len = sizeof(tv);
-    memcpy(pkt.payload, &tv, tv_len);
+    memcpy(payload, &tv, tv_len);
 
     for (size_t i = tv_len; i < PAYLOAD_SIZE; i++) {
-        pkt.payload[i] = 42;
+        payload[i] = 42;
     }
+    memcpy(temp + ICMP_MINLEN, payload, PAYLOAD_SIZE);
 
-    pkt.checksum = htons(calculate_checksum((uint8_t *)&pkt, PACKET_SIZE));
+    checksum = calculate_checksum(temp, PACKET_SIZE);
+    checksum = htons(checksum);
 
-    // FOR DEBUG
-    // print_packet((uint16_t *)&pkt, PACKET_SIZE);
+    memcpy(temp + 2, &checksum, 2);
 
-    return pkt;
+    memcpy(buf, temp, PACKET_SIZE);
 }
 
 static void send_packet(Host *h) {
-    const Packet pkt = build_packet(h);
+    uint8_t buf[IP_MAXPACKET];
 
-    if (sendto(h->fd, &pkt, PACKET_SIZE, 0, (struct sockaddr *)&h->addr, sizeof(h->addr)) < 0) {
+    build_packet(h, buf);
+
+    if (sendto(h->fd, buf, PACKET_SIZE, 0, (struct sockaddr *)&h->addr, sizeof(h->addr)) < 0) {
         fatal("sendto");
     }
-    
+
     h->packet_sent++;
 }
 
