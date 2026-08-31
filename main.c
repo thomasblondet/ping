@@ -46,7 +46,7 @@ static uint16_t calculate_checksum(const uint8_t *pkt, const size_t size) {
     uint32_t sum = 0;
     size_t i;
 
-    for (i = 0; i < size; i += 2) {
+    for (i = 0; i + 1 < size; i += 2) {
         const uint16_t word = pkt[i] << 8 | pkt[i + 1];
         sum += word;
     }
