@@ -5,6 +5,7 @@
 static int g_sig;
 static int g_count;
 static int g_ttl;
+static int g_verbose;
 
 static void signal_handler(const int sig) {
     g_sig = 1;
@@ -206,6 +207,8 @@ int main(int argc, char *argv[]) {
             g_count = atoi(argv[2]);
         } else if (strcmp(argv[1], "-m") == 0) {
             g_ttl = atoi(argv[2]);
+        } else if (strcmp(argv[1], "-v") == 0) {
+            g_verbose = 1;
         } else {
             return 1;
         }
