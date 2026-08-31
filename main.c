@@ -140,6 +140,7 @@ static void get_response(Host *h) {
     const uint8_t *icmp = buf + ip_hdr_len;
 
     uint8_t type = icmp[0];
+    uint8_t code = icmp[1];
     if (type == ICMP_ECHOREPLY) {
         int ttl = buf[8];
 
@@ -149,9 +150,13 @@ static void get_response(Host *h) {
 
         fprintf(stdout, "%ld bytes from %s: icmp_seq=%ld ttl=%d time=%.3f ms\n",
             n - ip_hdr_len, h->ip, h->packet_received, ttl, time_diff(&start, &end));
+        h->packet_received++;
+    } else {
+        if (g_verbose) {
+            fprintf(stdout, "%ld bytes from %s: type = %d, code = %d\n",
+                n, h->ip, type, code);
+        }
     }
-
-    h->packet_received++;
 }
 
 static void ping_loop(Host *h) {
