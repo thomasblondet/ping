@@ -37,3 +37,7 @@ sudo ./ping <hostname ou adresse IP>
 * Attente et parsing de la réponse
 * Calcul du temps de réponse
 * Affichage des statistiques lors de l'interruption du programme (`^C`) ou lorsque le nombre de requêtes défini avec l'option `-c` est atteint
+
+## Demo
+
+![Ping demo](assets/ping_demo.gif)
