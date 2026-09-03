@@ -123,6 +123,26 @@ static double time_diff(struct timeval *start, struct timeval *end) {
         - ((start->tv_sec * 1000.0) + (start->tv_usec / 1000.0)));
 }
 
+static void calculate_stddev(Host *h, double t) {
+    if (h->packet_received == 1) {
+        h->rtt.min = DBL_MAX;
+    }
+    if (t < h->rtt.min) {
+        h->rtt.min = t;
+    }
+    if (t > h->rtt.max) {
+        h->rtt.max = t;
+    }
+
+    // Welford formula
+    long n = h->packet_received;
+    double delta = t - h->rtt.average;
+    h->rtt.average = h->rtt.average + delta / n;
+    double delta2 = t - h->rtt.average;
+    h->rtt.m2 = h->rtt.m2 + delta * delta2;
+    h->rtt.stddev = sqrt(h->rtt.m2 / n);
+}
+
 static void get_response(Host *h) {
     uint8_t buf[IP_MAXPACKET];
 
@@ -148,9 +168,12 @@ static void get_response(Host *h) {
         memcpy(&start, icmp + ICMP_MINLEN, sizeof(struct timeval));
         gettimeofday(&end, NULL);
 
+        double rtt = time_diff(&start, &end);
+
         fprintf(stdout, "%ld bytes from %s: icmp_seq=%ld ttl=%d time=%.3f ms\n",
-            n - ip_hdr_len, h->ip, h->packet_received, ttl, time_diff(&start, &end));
+            n - ip_hdr_len, h->ip, h->packet_received, ttl, rtt);
         h->packet_received++;
+        calculate_stddev(h, rtt);
     } else {
         if (g_verbose) {
             fprintf(stdout, "%ld bytes from %s: type = %d, code = %d\n",
@@ -177,6 +200,9 @@ static void ping_loop(Host *h) {
     double loss = (double)(h->packet_sent - h->packet_received) / (double)h->packet_sent;
     fprintf(stdout, "%ld packets transmitted, %ld packets received, %.1f%% packet loss\n",
         h->packet_sent, h->packet_received, 100.0 * loss);
+
+    fprintf(stdout, "round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n",
+        h->rtt.min, h->rtt.average, h->rtt.max, h->rtt.stddev);
 }
 
 static void init_socket(Host *h) {

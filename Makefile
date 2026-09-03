@@ -6,15 +6,17 @@ CFLAGS = -std=c17 \
          -Wextra \
          -Wpedantic \
 		 -Werror
+		 
+MATHS = -lm
 
 SAN = -fsanitize=address,undefined \
 	  -fno-sanitize-recover=undefined -g -O1
 
 ping: main.c
-	$(CC) $(CFLAGS) main.c -o $(NAME)
+	$(CC) $(CFLAGS) main.c -o $(NAME) $(MATHS)
 
 san: main.c
-	$(CC) $(CFLAGS) $(SAN) main.c -o $(NAME)
+	$(CC) $(CFLAGS) $(SAN) main.c -o $(NAME) $(MATHS)
 
 clean:
 	rm -f $(NAME)

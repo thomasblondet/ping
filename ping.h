@@ -22,12 +22,21 @@
 #define PACKET_SIZE (ICMP_MINLEN + PAYLOAD_SIZE)
 
 typedef struct {
+    double min;
+    double max;
+    double average;
+    double stddev;
+    double m2;
+} RTT;
+
+typedef struct {
     int fd;
     char hostname[NI_MAXHOST];
     char ip[INET_ADDRSTRLEN];
     struct sockaddr_in addr;
     long packet_sent;
     long packet_received;
+    RTT rtt;
 } Host;
 
 #endif
