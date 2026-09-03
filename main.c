@@ -18,6 +18,19 @@ static void fatal(const char *str) {
     exit(1);
 }
 
+static void help(void) {
+    fprintf(stdout,
+        "Usage: ping [options] <host>\n\n"
+
+        "Options:\n"
+        "  -c <count>    stop after sending <count> packets\n"
+        "  -m <ttl>      change the TTL in the IP header\n"
+        "  -v            print non-echo replies\n"
+        "  -h            display this help message\n");
+
+    exit(0);
+}
+
 static void hostname_resolution(Host *h) {
     const struct addrinfo hints = {
         .ai_flags = 0,
@@ -232,7 +245,7 @@ int main(int argc, char *argv[]) {
     Host h = {0};
     int opt;
 
-    while ((opt = getopt(argc, argv, "c:m:v")) != -1) {
+    while ((opt = getopt(argc, argv, "c:m:vh")) != -1) {
         switch (opt) {
             case 'c':
                 g_count = atoi(optarg);
@@ -242,6 +255,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'v':
                 g_verbose = 1;
+                break;
+            case 'h':
+                help();
                 break;
             default:
                 break;
@@ -255,5 +271,6 @@ int main(int argc, char *argv[]) {
     hostname_resolution(&h);
     init_socket(&h);
     ping_loop(&h);
+    
     return 0;
 }
