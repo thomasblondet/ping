@@ -3,9 +3,9 @@
 #include "ping.h"
 
 static int g_sig;
-static int g_count;
-static int g_ttl;
-static int g_verbose;
+static int g_count = 0;
+static int g_ttl = 0;
+static int g_verbose = 0;
 
 static void signal_handler(const int sig) {
     g_sig = 1;
@@ -204,22 +204,26 @@ static void init_socket(Host *h) {
 
 int main(int argc, char *argv[]) {
     Host h = {0};
+    int opt;
 
-    if (argc == 2) {
-        memcpy(h.hostname, argv[1], strlen(argv[1]));
-    } else if (argc > 2) {
-        if (strcmp(argv[1], "-c") == 0) {
-            g_count = atoi(argv[2]);
-        } else if (strcmp(argv[1], "-m") == 0) {
-            g_ttl = atoi(argv[2]);
-        } else if (strcmp(argv[1], "-v") == 0) {
-            g_verbose = 1;
-        } else {
-            return 1;
+    while ((opt = getopt(argc, argv, "c:m:v")) != -1) {
+        switch (opt) {
+            case 'c':
+                g_count = atoi(optarg);
+                break;
+            case 'm':
+                g_ttl = atoi(optarg);
+                break;
+            case 'v':
+                g_verbose = 1;
+                break;
+            default:
+                break;
         }
-        memcpy(h.hostname, argv[3], strlen(argv[3]));
-    } else {
-        return 1;
+    }
+
+    if (optind < argc) {
+        snprintf(h.hostname, sizeof(h.hostname), "%s", argv[argc - 1]);
     }
 
     hostname_resolution(&h);
