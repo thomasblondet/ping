@@ -13,7 +13,7 @@ static void signal_handler(const int sig) {
 }
 
 static void fatal(const char *str) {
-    fprintf(stderr, "ft_ping: ");
+    fprintf(stderr, "ping: ");
     perror(str);
     exit(1);
 }
@@ -44,7 +44,7 @@ static void hostname_resolution(Host *h) {
     struct addrinfo *res = NULL;
     const int ret = getaddrinfo(h->hostname, NULL, &hints, &res);
     if (ret != 0) {
-        printf("ft_ping: cannot resolve %s: %s\n", h->hostname, gai_strerror(ret));
+        printf("ping: cannot resolve %s: %s\n", h->hostname, gai_strerror(ret));
         exit(1);
     }
 
