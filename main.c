@@ -216,6 +216,8 @@ static void ping_loop(Host *h) {
 
     fprintf(stdout, "round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n",
         h->rtt.min, h->rtt.average, h->rtt.max, h->rtt.stddev);
+
+    close(h->fd);
 }
 
 static void init_socket(Host *h) {
@@ -229,13 +231,11 @@ static void init_socket(Host *h) {
         .tv_usec = 0,
     };
     if (setsockopt(h->fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-        close(h->fd);
         fatal("setsockopt");
     }
 
     if (g_ttl) {
         if (setsockopt(h->fd, IPPROTO_IP, IP_TTL, &g_ttl, sizeof(g_ttl)) < 0) {
-            close(h->fd);
             fatal("setsockopt");
         }
     }
