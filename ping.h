@@ -22,6 +22,12 @@
 #define PACKET_SIZE (ICMP_MINLEN + PAYLOAD_SIZE)
 
 typedef struct {
+    int count;
+    int ttl;
+    bool verbose;
+} Options;
+
+typedef struct {
     double min;
     double max;
     double average;
@@ -38,5 +44,13 @@ typedef struct {
     long packet_received;
     RTT rtt;
 } Host;
+
+extern Options opts;
+
+void build_packet(Host* h, uint8_t* buf);
+void send_packet(Host* h);
+void get_response(Host* h);
+void fatal(char const* str);
+[[maybe_unused]] void print_packet(const uint16_t* pkt, size_t size);
 
 #endif

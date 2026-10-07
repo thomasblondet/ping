@@ -12,11 +12,11 @@ MATHS = -lm
 SAN = -fsanitize=address,undefined \
 	  -fno-sanitize-recover=undefined -g -O1
 
-ping: main.c
-	$(CC) $(CFLAGS) main.c -o $(NAME) $(MATHS)
+ping: main.c packet.c
+	$(CC) $(CFLAGS) $^ -o $(NAME) $(MATHS)
 
-san: main.c
-	$(CC) $(CFLAGS) $(SAN) main.c -o $(NAME) $(MATHS)
+san: main.c packet.c
+	$(CC) $(CFLAGS) $(SAN) $^ -o $(NAME) $(MATHS)
 
 clean:
 	rm -f $(NAME)
