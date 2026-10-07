@@ -1,7 +1,7 @@
 NAME = ping
 CC = cc
 
-CFLAGS = -std=c17 \
+CFLAGS = -std=c2x \
          -Wall \
          -Wextra \
          -Wpedantic \
