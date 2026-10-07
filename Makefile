@@ -1,5 +1,5 @@
 NAME = ping
-CC = clang
+CC = cc
 
 CFLAGS = -std=c17 \
          -Wall \
